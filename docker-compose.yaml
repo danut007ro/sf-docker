@@ -1,0 +1,33 @@
+version: '3.4'
+
+services:
+    php:
+        build:
+            context: .
+            dockerfile: Dockerfile.php
+            args:
+                UID: "${UID:-1000}"
+                GID: "${GID:-1000}"
+        volumes:
+            - .:/var/www/html:rw
+        user: "${UID:-1000}:${GID:-1000}"
+        environment:
+            PHP_IDE_CONFIG: "serverName=SAMEDAY"
+
+    nginx:
+        image: nginx:alpine
+        depends_on:
+            - php
+        volumes:
+            - ./public:/var/www/html/public:ro
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+        ports:
+            - "80:80"
+
+    mysql:
+        image: mysql:8
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_DATABASE: "db"
+            MYSQL_ALLOW_EMPTY_PASSWORD: "true"
